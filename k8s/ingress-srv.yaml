@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-service
+  labels:
+    name: ingress-service
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: moove.dev
+      http:
+        paths:
+          - path: /api/trips
+            pathType: Prefix
+            backend:
+              service:
+                name: moove-trips-srv
+                port:
+                  number: 3001
+
+          - path: /api/places
+            pathType: Prefix
+            backend:
+              service:
+                name: moove-places-srv
+                port:
+                  number: 3001
+
+          - path: /api/logs
+            pathType: Prefix
+            backend:
+              service:
+                name: moove-logger-srv
+                port:
+                  number: 3001
+
+          # - path: /api/trips/?(.*)
+          #   pathType: ImplementationSpecific
+          #   backend:
+          #     service:
+          #       name: moove-trips-srv
+          #       port:
+          #         number: 3001
+
+          # - path: /api/places/?(.*)
+          #   pathType: ImplementationSpecific
+          #   backend:
+          #     service:
+          #       name: moove-places-srv
+          #       port:
+          #         number: 3001

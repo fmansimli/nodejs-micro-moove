@@ -1,0 +1,57 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+build:
+  artifacts:
+    - image: faridmansimli/moove-places
+      context: places
+      sync:
+        manual:
+          - src: src/**/*.ts
+            dest: .
+      docker:
+        dockerfile: Dockerfile.dev
+      hooks:
+        before:
+          - command: ["chmod", "+x", "places/prebuild-dev.sh"]
+            os: ["darwin", "linux"]
+
+          - command: ["places/prebuild-dev.sh"]
+            os: ["darwin", "linux"]
+
+    - image: faridmansimli/moove-trips
+      context: trips
+      sync:
+        manual:
+          - src: src/**/*.ts
+            dest: .
+      docker:
+        dockerfile: Dockerfile.dev
+      hooks:
+        before:
+          - command: ["chmod", "+x", "trips/prebuild-dev.sh"]
+            os: ["darwin", "linux"]
+
+          - command: ["trips/prebuild-dev.sh"]
+            os: ["darwin", "linux"]
+
+    - image: faridmansimli/moove-logger
+      context: logger
+      sync:
+        manual:
+          - src: src/**/*.ts
+            dest: .
+      docker:
+        dockerfile: Dockerfile.dev
+      hooks:
+        before:
+          - command: ["chmod", "+x", "logger/prebuild-dev.sh"]
+            os: ["darwin", "linux"]
+
+          - command: ["logger/prebuild-dev.sh"]
+            os: ["darwin", "linux"]
+
+  local:
+    push: false
+manifests:
+  rawYaml:
+    - ./k8s/*

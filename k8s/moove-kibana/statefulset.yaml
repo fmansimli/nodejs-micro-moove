@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: moove-kibana-ss
+spec:
+  selector:
+    matchLabels:
+      app: moove-kibana
+  serviceName: moove-kibana-srv
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: moove-kibana
+    spec:
+      containers:
+        - name: moove-kibana-cont
+          image: docker.elastic.co/kibana/kibana:8.15.0
+          resources:
+            limits:
+              memory: "900Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5601
+          env:
+            - name: ELASTICSEARCH_URL
+              value: "http://moove-elasticsearch:9200"
+          volumeMounts:
+            - name: moove-kibana-data
+              mountPath: /usr/share/kibana/data
+
+  volumeClaimTemplates:
+  - metadata:
+      name: moove-kibana-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

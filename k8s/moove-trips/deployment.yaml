@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moove-trips-depl
+  labels:
+    name: moove-trips
+spec:
+  selector:
+    matchLabels:
+      app: moove-trips
+  template:
+    metadata:
+      labels:
+        app: moove-trips
+    spec:
+      containers:
+      - name: moove-trips-cont
+        image: faridmansimli/moove-trips
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "300m"
+        ports:
+        - containerPort: 3001
+        env:
+          - name: APP_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+
+          - name: PORT
+            value: "3001"
+
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: places-mongo-secret
+                key: root-username
+                
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: places-mongo-secret
+                key: root-password
+
+          - name: MONGO_INITDB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: places-mongo-secret
+                key: none-root-username
+
+          - name: MONGO_INITDB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: places-mongo-secret
+                key: none-root-password
+
+          - name: MONGO_INITDB_HOST
+            value: moove-trips-db-srv
+
+          - name: MONGO_URI
+            value: "mongodb://$(MONGO_INITDB_USERNAME):$(MONGO_INITDB_PASSWORD)@$(MONGO_INITDB_HOST):27017/tripsdb"
+
+          - name: KAFKA_URI
+            value: "moove-kafka-srv:9092"
+          
+          - name: KAFKAJS_NO_PARTITIONER_WARNING
+            value: "1"

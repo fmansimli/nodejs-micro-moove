@@ -1,0 +1,7 @@
+{
+    "scripts": {
+        "dev": "skaffold dev",
+        "devc": "skaffold dev --cache-artifacts=false",
+        "rebuild:common": "chmod +x pre-shared.sh && ./pre-shared.sh"
+    }
+}

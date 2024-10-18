@@ -1,0 +1,43 @@
+---
+# Source: logstash/templates/configuration-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moove-logstash
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: moove
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: logstash
+    app.kubernetes.io/version: 8.15.0
+    helm.sh/chart: logstash-6.3.2
+data:
+  logstash.conf: |-
+    input {
+      # udp {
+      #   port => 1514
+      #   type => syslog
+      # }
+      # tcp {
+      #   port => 1514
+      #   type => syslog
+      # }
+      http { port => 8080 }
+      file {
+        path => "/var/log/containers/*.log"
+        start_position => "beginning"
+      }
+      
+    }
+    output {
+      elasticsearch {
+        hosts => ["${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"]
+        manage_template => true
+        index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+      }
+      # gelf {
+      #   host => "${GRAYLOG_HOST}"
+      #   port => ${GRAYLOG_PORT}
+      # }
+      stdout {}
+    }

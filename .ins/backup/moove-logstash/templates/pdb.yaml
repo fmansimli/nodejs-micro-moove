@@ -1,0 +1,19 @@
+---
+# Source: logstash/templates/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: moove-logstash
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: moove
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: logstash
+    app.kubernetes.io/version: 8.15.0
+    helm.sh/chart: logstash-6.3.2
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: moove
+      app.kubernetes.io/name: logstash

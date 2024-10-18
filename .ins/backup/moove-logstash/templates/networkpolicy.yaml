@@ -1,0 +1,27 @@
+---
+# Source: logstash/templates/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: moove-logstash
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: moove
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: logstash
+    app.kubernetes.io/version: 8.15.0
+    helm.sh/chart: logstash-6.3.2
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: moove
+      app.kubernetes.io/name: logstash
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    - ports:
+        - port: 8080
+        - port: 9600

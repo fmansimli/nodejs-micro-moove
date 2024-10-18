@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: moove-kafka-srv
+spec:
+  clusterIP: None
+  selector:
+    app: moove-kafka
+  ports:
+    - port: 9092
+      targetPort: 9092
+      name: k-client-port
+    - port: 9093
+      targetPort: 9093
+      name: k-cnt-port

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: moove-trips-db-ss
+spec:
+  selector:
+    matchLabels:
+      app: moove-trips-db
+  serviceName: moove-trips-db-srv
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: moove-trips-db
+    spec:
+      volumes:
+      - name: init-script
+        configMap:
+          name: moove-trips-db-init-script
+      containers:
+      - name: moove-trips-db-cont
+        image: mongo
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: trips-mongo-secret
+                key: root-username
+                  
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: trips-mongo-secret
+                key: root-password
+
+          - name: MONGO_INITDB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: trips-mongo-secret
+                key: none-root-username
+
+          - name: MONGO_INITDB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: trips-mongo-secret
+                key: none-root-password
+
+          - name: MONGO_INITDB_DATABASE
+            value: tripsdb
+        ports:
+        - containerPort: 27017
+          name: tr-db-port
+        volumeMounts:
+        - name: moove-trips-db-data
+          mountPath: /data/db
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d/init.js
+          subPath: init.js
+  volumeClaimTemplates:
+  - metadata:
+      name: moove-trips-db-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 500Mi

@@ -1,0 +1,24 @@
+---
+# Source: logstash/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: moove-logstash
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: moove
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: logstash
+    app.kubernetes.io/version: 8.15.0
+    helm.sh/chart: logstash-6.3.2
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: moove
+    app.kubernetes.io/name: logstash

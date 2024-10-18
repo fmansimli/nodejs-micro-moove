@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: moove-places-db-srv
+spec:
+  clusterIP: None
+  selector:
+    app: moove-places-db
+  ports:
+    - port: 27017
+      targetPort: 27017

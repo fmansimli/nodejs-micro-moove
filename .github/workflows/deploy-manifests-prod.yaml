@@ -1,0 +1,56 @@
+name: Deploy manifests
+on:
+  push:
+    branches:
+      - "production"
+    paths:
+      - "infra/k8s-prod/**"
+
+  workflow_dispatch:
+
+env:
+  TEST_VARIABLE: "test-variable"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-central-1
+      KUBERNETES_CLUSTER_NAME: moove-cluster
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        id: install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      
+      - name: Save AWS kubeconfig
+        run: aws eks update-kubeconfig --name $KUBERNETES_CLUSTER_NAME --region=$AWS_REGION
+
+      - name: Apply all deployments and other kube objects to the cluster
+        run: kubectl apply -f infra/k8s-prod
+      
+      - name: Finish the process
+        run: echo "applying of manifests is successfull!"

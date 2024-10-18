@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: moove-places-db-ss
+spec:
+  selector:
+    matchLabels:
+      app: moove-places-db
+  serviceName: moove-places-db-srv
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: moove-places-db
+    spec:
+      volumes:
+      - name: init-script
+        configMap:
+          name: moove-places-db-init-script
+      containers:
+        - name: moove-places-db-cont
+          image: mongo
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: places-mongo-secret
+                  key: root-username
+                  
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: places-mongo-secret
+                  key: root-password
+
+            - name: MONGO_INITDB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: places-mongo-secret
+                  key: none-root-username
+
+            - name: MONGO_INITDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: places-mongo-secret
+                  key: none-root-password
+
+            - name: MONGO_INITDB_DATABASE
+              value: placesdb
+
+          ports:
+            - containerPort: 27017
+              name: pl-db-port
+          volumeMounts:
+            - name: moove-places-db-data
+              mountPath: /data/db
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/init.js
+              subPath: init.js
+
+  volumeClaimTemplates:
+    - metadata:
+        name: moove-places-db-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 500Mi
+    
